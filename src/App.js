@@ -1,14 +1,13 @@
 import "./App.css";
 import SideBar from "./layout/SideBar";
 import EmailList from "./layout/EmailList";
-import { Flex, Heading, Text } from "rebass";
+import { Flex, Heading } from "rebass";
 import theme from "./theme";
 import { ThemeProvider } from "styled-components";
 import { useRef, useState } from "react";
 import ChatBox from "./layout/ChatBox";
 import { useEffect } from "react";
 import { fetchEmails, postEmails } from "./test_data/loader";
-import { use } from "react";
 import Loading from "./layout/Loading";
 
 let loaded = false;
@@ -56,7 +55,7 @@ function App() {
         {/* Header */}
         <Flex height="70px" width="100vw" fontWeight={800} fontFamily="serif">
           <Heading pt={3} px={4} fontSize={5}>
-            Email Client
+            Email4LazyNerds
           </Heading>
           <Flex
             p={3}
@@ -77,7 +76,7 @@ function App() {
               });
             }}
           >
-            FIND SPAM!
+            CLEAN NOW!
           </Flex>
         </Flex>
 
@@ -86,7 +85,7 @@ function App() {
           <SideBar
             selected={selected}
             onSelect={select}
-            items={["Inbox", "Junk Emails", "All Emails"]}
+            items={["Inbox", "Spams", "All Emails"]}
           />
           <EmailList
             flex={1}
