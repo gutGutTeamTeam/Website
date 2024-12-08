@@ -4,36 +4,47 @@ import EmailList from "./layout/EmailList";
 import { Flex, Heading, Text } from "rebass";
 import theme from "./theme";
 import { ThemeProvider } from "styled-components";
-import { useState } from "react";
-import emails from "./test_data/emails";
+import { useRef, useState } from "react";
 import ChatBox from "./layout/ChatBox";
+import { useEffect } from "react";
+import { fetchEmails, postEmails } from "./test_data/loader";
+import { use } from "react";
+import Loading from "./layout/Loading";
+
+let loaded = false;
 
 function App() {
   let [selected, select] = useState(0);
   let [showEmail, setShowEmail] = useState(-1);
-  let selectedEmails;
-  switch (selected) {
-    case 2:
-      selectedEmails = emails;
-      break;
-    case 1:
-      selectedEmails = emails.filter((email) => email.label);
-      break;
-    default:
-      selectedEmails = emails.filter((email) => !email.label);
-  }
+  let [emails, setEmails] = useState({ Message: [] });
+  let [spamIndices, setSpamIndices] = useState([]);
+
+  let loading_ref = useRef(null);
+
+  useEffect(() => {
+    if (!loaded) {
+      fetchEmails((data) => setEmails(data));
+      loaded = true;
+    }
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       {/* Float Layer */}
-      <ChatBox
-        width="1000px"
-        height="800px"
-        title="Content"
-        onClose={() => setShowEmail(-1)}
-        show={showEmail !== -1}
-      >
-        {selectedEmails[showEmail]?.content}
-      </ChatBox>
+
+      <Loading ref={loading_ref} show={emails["Message"].length === 0} />
+
+      {loaded && (
+        <ChatBox
+          width="1000px"
+          height="800px"
+          title="Content"
+          onClose={() => setShowEmail(-1)}
+          show={showEmail !== -1}
+        >
+          {emails["Message"][showEmail]}
+        </ChatBox>
+      )}
       {/* Main Layer */}
       <Flex
         flexDirection="column"
@@ -57,8 +68,16 @@ function App() {
             alignItems="center"
             bg={theme.colors.accent}
             sx={{ cursor: "pointer", borderRadius: "10px" }}
+            onClick={() => {
+              console.log("loading_ref", loading_ref);
+              loading_ref.current.style.visibility = "visible";
+              postEmails(emails["Message"], (data) => {
+                loading_ref.current.style.visibility = "hidden";
+                setSpamIndices(data["spams"]);
+              });
+            }}
           >
-            LOGIN
+            FIND SPAM!
           </Flex>
         </Flex>
 
@@ -71,7 +90,10 @@ function App() {
           />
           <EmailList
             flex={1}
-            content={selectedEmails}
+            names={names}
+            spamIndices={spamIndices}
+            column={selected}
+            content={emails["Message"]}
             onSelect={(i) => setShowEmail(i)}
           />
         </Flex>
@@ -81,3 +103,23 @@ function App() {
 }
 
 export default App;
+
+function spawnRandomNames(count) {
+  const names = [
+    "Super Hacker",
+    "Giga Chad",
+    "Secret Geek",
+    "Smart Nerd",
+    "Cook Techie",
+    "Funny Guy",
+    "Crazy Dude",
+    "Anonymous",
+  ];
+  const result = [];
+  for (let i = 0; i < count; i++) {
+    result.push(names[Math.floor(Math.random() * names.length)]);
+  }
+  return result;
+}
+
+const names = spawnRandomNames(20);
